@@ -86,7 +86,7 @@ const authenticateToken = (req, res, next) => {
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://job-ui-six.vercel.app',
+  origin: process.env.CLIENT_URL || 'https://Shreyas-M-246418.github.io',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
