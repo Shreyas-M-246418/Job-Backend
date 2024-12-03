@@ -87,11 +87,7 @@ const authenticateToken = (req, res, next) => {
 // Middleware
 
 app.use(cors({
-    origin: [
-      'https://shreyas-m-246418.github.io',
-      'https://shreyas-m-246418.github.io/Job-frontend',
-      'http://localhost:3000'
-    ],
+    origin: ['https://shreyas-m-246418.github.io', 'https://shreyas-m-246418.github.io/Job-frontend'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -155,16 +151,17 @@ app.get('/auth/github', (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
+  
+      res.header('Access-Control-Allow-Origin', 'https://shreyas-m-246418.github.io');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      
+      res.json({ user, token });
+    } catch (error) {
+      console.error('GitHub callback error:', error);
+      res.status(500).json({ error: 'Authentication failed' });
+    }
+  });
 
-    res.json({ user, token });
-  } catch (error) {
-    console.error('GitHub callback error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
-  }
-});
-
-res.header('Access-Control-Allow-Origin', 'https://shreyas-m-246418.github.io');
-res.header('Access-Control-Allow-Credentials', 'true');
 
 app.get('/auth/verify', authenticateToken, (req, res) => {
   res.json({ user: req.user });
