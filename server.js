@@ -85,13 +85,14 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Middleware
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://Shreyas-M-246418.github.io',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  exposedHeaders: ['Set-Cookie']
-}));
+    origin: ['https://shreyas-m-246418.github.io', 'https://shreyas-m-246418.github.io/Job-frontend'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    exposedHeaders: ['Set-Cookie']
+  }));
 
 app.use(express.json());
 
