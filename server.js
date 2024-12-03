@@ -87,7 +87,11 @@ const authenticateToken = (req, res, next) => {
 // Middleware
 
 app.use(cors({
-    origin: ['https://shreyas-m-246418.github.io', 'https://shreyas-m-246418.github.io/Job-frontend'],
+    origin: [
+      'https://shreyas-m-246418.github.io',
+      'https://shreyas-m-246418.github.io/Job-frontend',
+      'http://localhost:3000'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -97,60 +101,60 @@ app.use(cors({
 app.use(express.json());
 
 app.use(session({ 
-  store: new FileStore({
-    path: './sessions'
-  }),
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
+    store: new FileStore({
+      path: './sessions'
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: true, // Enable for HTTPS
+      sameSite: 'none', // Required for cross-site cookies
+      maxAge: 24 * 60 * 60 * 1000
+    }
+  }));
 
 // Auth routes
 app.get('/auth/github', (req, res) => {
-  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.GITHUB_CALLBACK_URL)}`;
-  res.json({ url: githubAuthUrl });
-});
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.GITHUB_CALLBACK_URL)}&scope=user`;
+    res.json({ url: githubAuthUrl });
+  });
 
-app.post('/auth/github/callback', async (req, res) => {
-  try {
-    const { code } = req.body;
-    
-    const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
-      client_id: process.env.GITHUB_CLIENT_ID,
-      client_secret: process.env.GITHUB_CLIENT_SECRET,
-      code: code,
-      redirect_uri: process.env.GITHUB_CALLBACK_URL
-    }, {
-      headers: {
-        Accept: 'application/json'
-      }
-    });
-
-    const accessToken = tokenResponse.data.access_token;
-
-    const userResponse = await axios.get('https://api.github.com/user', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    });
-
-    const user = {
-      id: userResponse.data.id,
-      username: userResponse.data.login,
-      name: userResponse.data.name || userResponse.data.login,
-      email: userResponse.data.email
-    };
-
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
-    );
+  app.post('/auth/github/callback', async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code: code,
+        redirect_uri: process.env.GITHUB_CALLBACK_URL
+      }, {
+        headers: {
+          Accept: 'application/json'
+        }
+      });
+  
+      const accessToken = tokenResponse.data.access_token;
+  
+      const userResponse = await axios.get('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+  
+      const user = {
+        id: userResponse.data.id,
+        username: userResponse.data.login,
+        name: userResponse.data.name || userResponse.data.login,
+        email: userResponse.data.email
+      };
+  
+      const token = jwt.sign(
+        { userId: user.id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
 
     res.json({ user, token });
   } catch (error) {
@@ -158,6 +162,9 @@ app.post('/auth/github/callback', async (req, res) => {
     res.status(500).json({ error: 'Authentication failed' });
   }
 });
+
+res.header('Access-Control-Allow-Origin', 'https://shreyas-m-246418.github.io');
+res.header('Access-Control-Allow-Credentials', 'true');
 
 app.get('/auth/verify', authenticateToken, (req, res) => {
   res.json({ user: req.user });
@@ -330,13 +337,13 @@ app.get('/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    error: 'Internal server error',
-    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    console.error(err.stack);
+    res.status(500).json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   });
-});
- 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+  
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
